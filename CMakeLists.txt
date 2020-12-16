@@ -26,6 +26,11 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "")
   set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "build type default to RelWithDebInfo, set to Release to improve performance" FORCE)
 endif()
 
+get_filename_component(_VPD_3RDPARTY_DIR_ ../.. ABSOLUTE)
+set(PCL_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+set(WITH_VTK OFF CACHE BOOL "" FORCE)
+set(WITH_QT OFF CACHE BOOL "" FORCE)
+
 project(PCL VERSION 1.11.1)
 string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
 
@@ -295,6 +300,7 @@ endif()
 find_package(Threads REQUIRED)
 
 # Eigen (required)
+set(PC_EIGEN_INCLUDE_DIRS "${_VPD_3RDPARTY_DIR_}/eigen/eigen/build/install") 
 find_package(Eigen 3.1 REQUIRED)
 include_directories(SYSTEM ${EIGEN_INCLUDE_DIRS})
 
@@ -302,8 +308,23 @@ include_directories(SYSTEM ${EIGEN_INCLUDE_DIRS})
 if(NOT PCL_SHARED_LIBS OR ((WIN32 AND NOT MINGW) AND NOT PCL_BUILD_WITH_FLANN_DYNAMIC_LINKING_WIN32))
   set(FLANN_USE_STATIC ON)
 endif()
-find_package(FLANN 1.7.0 REQUIRED)
 
+# PATCH
+
+# PATCH - manually set flann.pc vars
+# Assumes flann is already installed by VoxeLProjectDeps (and it is:))
+get_filename_component(_FLANN_INSTALL_PATH_ ../../flann/flann/install ABSOLUTE)
+set(FLANN_FOUND 1)
+set(FLANN_INCLUDE_DIRS ${_FLANN_INSTALL_PATH_}/include)
+set(FLANN_LIBRARY_DIRS ${_FLANN_INSTALL_PATH_}/lib)
+set(FLANN_LIBRARIES ${FLANN_LIBRARY_DIRS}/flann_cpp_s.lib)
+
+include_directories(${FLANN_INCLUDE_DIRS})
+
+# Create interface library that effectively becomes an alias for the appropriate (static/dynamic) imported FLANN target
+add_library(FLANN::FLANN INTERFACE IMPORTED)
+set_property(TARGET FLANN::FLANN APPEND PROPERTY INTERFACE_LINK_LIBRARIES ${FLANN_LIBRARIES})
+	
 # libusb-1.0
 option(WITH_LIBUSB "Build USB RGBD-Camera drivers" TRUE)
 if(WITH_LIBUSB)
@@ -459,7 +480,10 @@ if(WITH_OPENGL)
 endif()
 
 # Boost (required)
+set(Boost_DIR "${_VPD_3RDPARTY_DIR_}/boost/boost/stage/lib/cmake/Boost-1.74.0")
+set(CMAKE_FIND_PACKAGE_PREFER_CONFIG TRUE)
 include("${PCL_SOURCE_DIR}/cmake/pcl_find_boost.cmake")
+set(CMAKE_FIND_PACKAGE_PREFER_CONFIG FALSE)
 
 ### ---[ Create the config.h file
 set(pcl_config_h_in "${CMAKE_CURRENT_SOURCE_DIR}/pcl_config.h.in")
