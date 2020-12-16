@@ -523,3 +523,17 @@ MAKE_DEP_GRAPH()
 ### ---[ Finish up
 PCL_WRITE_STATUS_REPORT()
 PCL_RESET_MAPS()
+
+# PATCH - change to MT<>
+set(3RDPARTY_PCL_TARGETS
+	pcl_common												
+	pcl_filters										
+	pcl_kdtree									
+	pcl_surface			
+	pcl_search
+)
+
+foreach(trgt IN LISTS 3RDPARTY_PCL_TARGETS)
+		set_property(TARGET ${trgt} PROPERTY
+             MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endforeach()
