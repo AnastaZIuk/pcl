@@ -27,7 +27,7 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "")
 endif()
 
 get_filename_component(_VPD_3RDPARTY_DIR_ ../.. ABSOLUTE)
-set(PCL_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+set(PCL_SHARED_LIBS ON CACHE BOOL "" FORCE) # too many errors on static..
 set(WITH_VTK OFF CACHE BOOL "" FORCE)
 set(WITH_QT OFF CACHE BOOL "" FORCE)
 
@@ -525,15 +525,16 @@ PCL_WRITE_STATUS_REPORT()
 PCL_RESET_MAPS()
 
 # PATCH - change to MT<>
-set(3RDPARTY_PCL_TARGETS
-	pcl_common												
-	pcl_filters										
-	pcl_kdtree									
-	pcl_surface			
-	pcl_search
-)
+# set(3RDPARTY_PCL_TARGETS
+	# pcl_common												
+	# pcl_filters										
+	# pcl_kdtree	
+	# pcl_octree
+	# pcl_surface			
+	# pcl_search
+# )
 
-foreach(trgt IN LISTS 3RDPARTY_PCL_TARGETS)
-		set_property(TARGET ${trgt} PROPERTY
-             MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-endforeach()
+# foreach(trgt IN LISTS 3RDPARTY_PCL_TARGETS)
+		# set_property(TARGET ${trgt} PROPERTY
+             # MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+# endforeach()
